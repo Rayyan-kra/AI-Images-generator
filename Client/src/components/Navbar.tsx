@@ -27,22 +27,36 @@ export default function Navbar() {
         { name: 'Plans', href: '/plans' },
     ];
 
-    const getUserCredits = async () =>{
-      try{
-        const token = await getToken()
-        const {data} = await api.get('/api/user/credits', {headers: {Authorization: `Bearer ${token}`}})
-        setCredits(data.credits)
-      } catch (error: any) {
-        toast.error(error?.response?.data?.message || error.message)
-        console.log(error);
-      }
-    }
+ const getUserCredits = async () => {
+   try {
+     console.log("Fetching credits...");
+
+     const token = await getToken();
+
+     const { data } = await api.get("/api/user/credits", {
+       headers: {
+         Authorization: `Bearer ${token}`,
+       },
+     });
+
+     console.log("Credits:", data.credits);
+
+     setCredits(data.credits);
+   } catch (error) {
+     console.log(error);
+   }
+ };
     useEffect(() => {
-      if(user){
-        (async () => {await getUserCredits();
-        })();
-      }
-    },[user,pathname])
+      if (!user) return;
+
+      getUserCredits();
+
+      const interval = setInterval(() => {
+        getUserCredits();
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }, [user]);
 
     return (
       <motion.nav
